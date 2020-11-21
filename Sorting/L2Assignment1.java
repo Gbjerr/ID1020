@@ -1,7 +1,7 @@
 /**
  * Assignment 1 in Lab 2
  *
- * Purpose of program: To sort an array of integers using algorithm Selection sort
+ * Purpose of program: To sort an array of integers using algorithm insertion sort
  * in ascending order via input from user.
  *
  * Execution of program:
@@ -10,7 +10,7 @@
  * Enter the size of your array:
  * 5
  *
- * Now enter the elements to be inserted to the array:
+ * Now enter the integers to be placed to the array:
  * 5
  * 8
  * 16
@@ -20,68 +20,69 @@
  * This is your array unsorted: [5], [8], [16], [-1], [3]
  *
  * Sorting array.....
- * [-1], [8], [16], [5], [3]
- * [-1], [3], [16], [5], [8]
- * [-1], [3], [5], [16], [8]
+ * [5], [8], [16], [-1], [3]
+ * [5], [8], [16], [-1], [3]
+ * [-1], [5], [8], [16], [3]
  * [-1], [3], [5], [8], [16]
  *
  *
  */
 
-import java.util.Scanner;
+import edu.princeton.cs.algs4.StdIn;
+
 public class L2Assignment1 {
 
     public static void main(String[] args) {
 
-       System.out.println("******* Assignment 1 *******\n"
-            + "Enter the size of your array: ");
-       Scanner sc = new Scanner(System.in);
-       int[] array = new int[sc.nextInt()];
+        System.out.println("******* Assignment 1 *******\n"
+                + "Enter the size of your array: ");
 
-       System.out.println("\nNow enter the elements to be inserted to the array: ");
+        int n = StdIn.readInt();
 
-       for(int i = 0; i < array.length; i++) {
-           array[i] = sc.nextInt();
-       }
+        // interrupt if input size is lesser than 1
+        if(n < 1) {
+            System.out.println("ERROR: Size of array must be greater than 0");
+            System.exit(0);
+        }
 
-       System.out.println("\nThis is your array unsorted: ");
-       printArray(array);
+        int[] array = new int[n];
 
-       System.out.println("\nSorting array.....");
-       sort(array, array.length);
+        System.out.println("\nNow enter the integers to be placed to the array: ");
+
+        for(int i = 0; i < array.length; i++) {
+            array[i] = StdIn.readInt();
+        }
+
+        System.out.println("\nThis is your array unsorted: ");
+        printArray(array);
+
+        System.out.println("\nSorting array.....");
+        insertionSort(array);
+
 
 
     }
 
     /**
-     * Method which sorts an array of integers using algorithm Selection sort.
-     * Selection sort uses a "min" reference to the minimum value which will be
-     * compared continously with other elements in the array. When we find a value
-     * less than the minimum, we point the reference to index of the new minimum.
-     * Thereafter we replace the old minimum with the new newly found one.
+     * Method which sorts an array of integers using algorithm Insertion sort.
      * @param arr - The array to be sorted.
-     * @param n - Length of arr
      */
-    private static void sort(int[] arr, int n){
-        if(n <= 1) {
-            System.out.println("Nothing to sort..");
-            return;
-        }
+    public static void insertionSort(int[] arr) {
 
-        for(int i = 0; i < n; i++) {
-            int min = i;
-            for(int j = i+1; j < n; j++) {
+        int var;
+        // loop from the start of array
+        for (int i = 1; i < arr.length; i++) {
 
-                if(arr[min] > arr[j]) {
-                    min = j;
-                }
+            // swap adjacent elements at position j and j-1 until element at position
+            // j is greater than element at position j-1
+            for (int j = i; j > 0 && (arr[j-1] > arr[j]); j--) {
+                // swap adjacent elements
+                var = arr[j-1];
+                arr[j-1] = arr[j];
+                arr[j] = var;
+
             }
-                if(i != min) {
-                    int temp = arr[min];
-                    arr[min] = arr[i];
-                    arr[i] = temp;
-                    printArray(arr);
-                }
+            printArray(arr);
         }
     }
 
@@ -90,17 +91,16 @@ public class L2Assignment1 {
      * @param arr - The array to be printed.
      */
     public static void printArray(int[] arr) {
-        StringBuilder sb = new StringBuilder();
 
+        System.out.println();
         for(int i = 0; i < arr.length; i++) {
             if(i == arr.length - 1) {
-                sb.append("[" + arr[i]+ "]");
+                System.out.printf("[%d]", arr[i]);
             }
             else {
-                sb.append("[" + arr[i]+ "]" +", ");
+                System.out.printf("[%d], ", arr[i]);
             }
         }
-        System.out.println(sb.toString());
     }
 
 }

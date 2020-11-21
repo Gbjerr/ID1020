@@ -1,121 +1,228 @@
 /**
- * Assignment 5
+ * Assignment 5 for lab 1
  *
- * Purpose of program: To represent a generalized queue. Elements can be added
- * to queue, where they always end up on index 1. The queue is created with help
- * of an array. One can also remove elements at a array space of ones own choice.
+ * Purpose of program: Implements and tests a generalized queue built upon a doubly
+ * linked circular list. Elements can be added to queue, where they end up at the first index.
+ * One can remove elements at any given index, that exists.
  */
 
-import java.util.NoSuchElementException;
-import java.util.Scanner;
+import java.util.EmptyStackException;
+import java.util.Iterator;
 
-public class L1Assignment5<Item> {
-    private Item[] array = null;
-    private int size;
-
-    public L1Assignment5() {
-        size = 0;
-    }
+public class L1Assignment5 {
 
     public static void main(String[] args) {
-        L1Assignment5<Integer> queue = new L1Assignment5();
+        GeneralizedDLCQueue<Integer> list = new GeneralizedDLCQueue<Integer>();
+
+        System.out.println("********Assignment 5********");
+
+        // testing the remove-k'th element function
+        System.out.println("\nTest: adding nodes to front of list, containing values given in the order: ");
+        System.out.println("------9  6  2  5  3  11  90  22");
+        System.out.println("------and first deleting the 3th element and then the 4th of the list");
 
 
-        System.out.println("********Assignment 5********\n" +
-            "Lets add an element!\n");
+        list.addAtFront(9);
+        list.printList();
+        list.addAtFront(6);
+        list.printList();
+        list.addAtFront(2);
+        list.printList();
+        list.addAtFront(5);
+        list.printList();
+        list.addAtFront(3);
+        list.printList();
+        list.addAtFront(11);
+        list.printList();
+        list.addAtFront(90);
+        list.printList();
+        list.addAtFront(22);
+        list.printList();
 
-        Scanner sc = new Scanner(System.in);
+        list.removeAtPos(3);
+        list.printList();
+        list.removeAtPos(4);
+        list.printList();
 
-        while(sc.hasNextInt()) {
-            queue.addNewElement(sc.nextInt());
-              System.out.println("printing content in queue: " + queue.toString() +
-                    "\nTo continue, enter more integers. To interrupt, enter a char");
-        }
+        String expectedRes = "[22], [90], [3], [2], [6], [9]";
+        System.out.printf("\n\nExpected string representation of queue: %s\n", expectedRes);
 
-        Scanner sc1 = new Scanner(System.in);
-        System.out.println("Now let's delete an element in the list by your own choice!\n");
-
-        while(sc1.hasNextInt()) {
-            if(queue.size == 0) {
-                System.out.println("No more elements are to be found...");
-                break;
-            }
-            queue.deleteAtPos(sc1.nextInt());
-              System.out.println("printing content in queue: " + queue.toString() +
-                    "\nTo continue, enter more integers. To interrupt, enter a char");
-        }
-    }
-
-
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for(int i = 1; i < size + 1; i++) {
-            if(i + 1 == size + 1) {
-                sb.append("[" + array[i] + "]");
-            }
-            else{
-                sb.append("[" + array[i] + "], ");
-            }
-        }
-        return sb.toString();
-    }
-
-    // Functionality which increases the size of the array with the double amount.
-    private void boostSize() {
-        if(array == null) {
-            array = (Item[]) new Object[10];
+        System.out.println("Comparing expected string with string representation...");
+        if(list.toString().equals(expectedRes)) {
+            System.out.println("\nTrue! The string result is equal to the expected result");
+            System.out.printf("%s --is equal to-- %s\n", expectedRes, list.toString());
         }
         else {
-            System.out.println("Increasing size of array......");
-            Item[] temp = (Item[]) new Object[array.length * 2];
-            int i = 0;
-            while(i < array.length) {
-                temp[i] = array[i];
-                i++;
-            }
-
-        array = temp;
+            System.out.println("\nFalse! The string result is not equal to the expected result");
+            System.out.printf("%s --is not equal to-- %s\n", expectedRes, list.toString());
         }
-    }
 
-   // Functionality which deletes element at position of the user's choice
-    private void deleteAtPos(int pos) {
-        if(size < pos || 1 > pos) {
-            System.out.println("Such position doesn't exist");
+        // testing the remove-k'th element function with an out of bounds argument k
+        System.out.println("\nTest: deleting the 10th element of current list");
+        String msg = "";
+
+        try {
+            list.removeAtPos(10);
+        }
+        catch (IllegalArgumentException ex) {
+            msg = ex.getMessage();
+        }
+
+        expectedRes = "Invalid argument <k>";
+        System.out.printf("\nExpected exception message: %s\n", expectedRes);
+
+        System.out.println("Comparing expected string with string representation...");
+        if(msg.equals(expectedRes)) {
+            System.out.println("\nTrue! The string result is equal to the expected result");
+            System.out.printf("%s --is equal to-- %s\n", expectedRes, msg);
         }
         else {
-
-            for(int i = pos + 1; i < array.length; i++) {
-            array[i - 1] = array[i];
+            System.out.println("\nFalse! The string result is not equal to the expected result");
+            System.out.printf("%s --is not equal to-- %s\n", expectedRes, msg);
         }
-        //System.out.println(array[1]);
-        size--;
+
+        // testing the iterator functionality of the list
+        System.out.println("\n\nTest: creating Iterator object of list and iterating through it: ");
+        Iterator it = list.iterator();
+
+        while (it.hasNext()) {
+            System.out.printf("[%s], ", it.next());
         }
 
     }
 
-    // Functionality which adds new element, which always appears in
-    // array space 1
-    private void addNewElement(Item item) {
-        if((array == null) ||
-                (size == array.length - 2)) {
+    // class representing each node in the list
+    private static class Node<Item> {
+        private Item data;                  //data stored in node
+        private Node next;
+        private Node prev;
 
-            boostSize();
+        // constructor for a node in the list, taking data as argument and asserts to Node.
+        public Node(Item item) {
+            this.next = null;
+            this.prev = null;
+            data = item;
         }
 
-        int i = array.length - 1;
-        while(i > 1) {
-            array[i] = array[i - 1];
-            i--;
+        // method returning data as a String
+        public String toString() {
+            return data.toString();
         }
-
-        array[1] =  item;
-        if(array[2] == null) {
-        }
-        size++;
     }
 
+    //class representing the double linked sentinel list
+    private static class GeneralizedDLCQueue<Item> implements Iterable<Item>{
+        private Node sentinel; // sentinel node, basically acts as a dummy node
+        private int size;
 
+        //contructor list, instantiates a list which is Empty
+        public GeneralizedDLCQueue() {
+            sentinel = new Node(null);
+            sentinel.next = sentinel;
+            sentinel.prev = sentinel;
+
+            size = 0;
+        }
+
+        // method prints out representation of current list
+        public void printList() {
+            Node current = sentinel.next;
+
+            System.out.println();
+            while (current != sentinel) {
+                if (current.next == sentinel)
+                    System.out.printf("[%s]", current.toString());
+                else
+                    System.out.printf("[%s], ", current.toString());
+                current = current.next;
+            }
+
+        }
+
+        public String toString() {
+            String res = "";
+
+            Node current = sentinel.next;
+
+            while (current != sentinel) {
+                if (current.next == sentinel)
+                    res += "[" + current.toString() + "]";
+                else
+                    res += "[" + current.toString() + "], ";
+
+                current = current.next;
+            }
+
+            return res;
+        }
+
+        // method returns boolean if current list is empty or not
+        public boolean isEmpty() {
+            return sentinel.prev == sentinel;
+        }
+
+        // method which removes the k'th element in the list
+        public void removeAtPos(int k) {
+            if(k <= 0 || k > size) {
+                throw new IllegalArgumentException("Invalid argument <k>");
+            }
+            if (isEmpty()) {
+                throw new EmptyStackException();
+            }
+            Node current = sentinel;
+            // iterate until to the k'th element
+            for(int i=0; i < k; i++) {
+                current = current.next;
+            }
+
+            // arrange references so that the k'th element is excluded
+            current.prev.next = current.next;
+            current.next.prev = current.prev;
+
+            size--;
+        }
+
+        // method which adds a node at the front of the list
+        public void addAtFront(Item item) {
+            Node temp = sentinel;
+            Node newHead = new Node(item);
+
+            newHead.next = temp.next;
+            newHead.prev = temp;
+            temp.next.prev = newHead;
+            temp.next = newHead;
+
+            size++;
+        }
+
+        @Override
+        public Iterator<Item> iterator() {
+            return new GeneralizedDLCIterator();
+        }
+
+        private class GeneralizedDLCIterator implements Iterator<Item> {
+            private boolean isLooped = false;
+            private Node current = sentinel.next;
+
+            // checks if there's a next element
+            public boolean hasNext() {
+                return current != sentinel && !isLooped;
+            }
+
+            // iterates to next element
+            public Item next() {
+                if (current == sentinel) {
+                    isLooped = true;
+                    return null;
+                }
+
+                Item item = (Item) current.data;
+                current = current.next;
+                return item;
+            }
+        }
+
+    }
 
 
 }

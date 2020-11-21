@@ -1,0 +1,53 @@
+Algorithm:
+1.
+Default boolean value is true at beginning of loop, we assume brackets are balanced
+from the start.
+
+2. 
+Read characters from stdIn in a loop until there is none left in stdIn stream.
+
+2. a)
+If character read is an open bracket, push it to a stack. 
+
+2. b) 
+If character instead is a closed bracket, pop element off
+stack and check if popped element is a open bracket of the same sort as
+the closed one. 
+
+If brackets are matching, then keep reading from stdIn and the loop going.
+
+If not, conclude that brackets are not balanced, by setting our boolean to false and 
+break out from the while loop. 
+
+2. c) 
+If character read is neither closed or open bracket, continue reading.
+
+3. 
+In the end, reached by termination of loop, program prints if brackets are balanced or not
+which is entirely dependant on the state of our boolean value.
+
+-----------------------------------------------------------------------------------------
+
+Choice of algorithm:
+Mainly chosen because of the time complexity, where the algorithm worst has O(n) in total as all 
+methods used in the loop (push/0, pop/0, isMatchBracket/2, isOpenBracket/1, isClosedBracket/1) are of 
+O(1) complexity. Using the stack data structure also brings simplicity to the solution.
+
+
+-----------------------------------------------------------------------------------------
+
+Complexities:
+
+Time complexity -
+
+worst case: O(n) - occurs when brackets are balanced, as the loop will iterate through all characters in stdIn
+		   stream.
+
+best case: O(1) - occurs when the first element read from stdIn is a closed bracket, meaning there's no open 
+		  bracket to pop from the stack. Thus the algorithm will break from loop and terminate, giving constant time.
+
+Memory complexity - 
+
+average: O(n) - as the problem uses a stack, memory will grow linearly for each node pushed to stack.
+
+

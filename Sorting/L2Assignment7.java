@@ -1,208 +1,109 @@
 /**
  * Assignment 7 in Lab 2
  *
- * Purpose of progream: To implement a linked list where each node in the list
- * holds an int value, and after each insertion, the list should be in ascending
- * order.
+ * Purpose of program: To sort an array of integers using algorithm insertion sort
+ * in descending order.
  *
  * Execution of program:
  *
- * *******Assignment7*******
- * Inserting elements elements in following order 2, 7, 5, 3, 6, 0, 11
+ * ******* Assignment 7 *******
+ * Enter the size of your array:
+ * 5
  *
- * Now these values will be inserted in order:
- * [2]
- * [2], [7]
- * [2], [5], [7]
- * [2], [3], [5], [7]
- * [2], [3], [5], [6], [7]
- * [0], [2], [3], [5], [6], [7]
- * [0], [2], [3], [5], [6], [7], [11]
+ * Now enter the elements to be inserted to the array:
+ * 5
+ * 8
+ * 16
+ * -1
+ * 3
+ *
+ * This is your array unsorted: [5], [8], [16], [-1], [3]
+ *
+ * Sorting array in descending order.....
+ *
+ * [-8], [-5], [-16], [1], [-3]
+ * [-16], [-8], [-5], [1], [-3]
+ * [-16], [-8], [-5], [1], [-3]
+ * [-16], [-8], [-5], [-3], [1]
+ *
+ * [16], [8], [5], [3], [-1]
+ *
  */
+
+import edu.princeton.cs.algs4.StdIn;
+
 public class L2Assignment7 {
 
-    // Node class which stores an int and has a next and prev reference
-    static class Node {
-        Node next;
-        Node prev;
-        int data;
+    public static void main(String[] args) {
 
-        // Constructor
-        public Node() {
-            next = null;
-            prev = null;
-            data = 0;
+        System.out.println("******* Assignment 7 *******\n"
+                + "Enter the size of your array: ");
+        int[] array = new int[StdIn.readInt()];
+
+        System.out.println("\nNow enter the elements to be inserted to the array: ");
+
+        for(int i = 0; i < array.length; i++) {
+            array[i] = StdIn.readInt();
         }
 
-        /**
-         * Constructor with input as the internal int stored and references
-         * to next and previous node.
-         * @param val
-         * @param nextNode
-         * @param prevNode
-         */
-        public Node(int val, Node nextNode, Node prevNode) {
-            data = val;
-            next = nextNode;
-            prev = prevNode;
-        }
+        System.out.println("\nThis is your array unsorted: ");
+        printArray(array);
+        invertArr(array);
 
-        /**
-         * Constructor with input as the internal int value stored.
-         * @param val
-         */
-        public Node(int val) {
-            next = null;
-            prev = null;
-            data = val;
-        }
+        System.out.println("\nSorting array in descending order.....");
+        insertionSort(array);
 
-        // Set method for referencing next node
-        public void setNext(Node nextNode) {
-            next = nextNode;
-        }
+        invertArr(array);
 
-        // Set method for referencing previous node
-        public void setPrev(Node prevNode) {
-            prev = prevNode;
-        }
+        System.out.println();
+        printArray(array);
 
-        // Set method for the internal int value
-        public void setData(int val) {
-            data = val;
+    }
+
+    public static void invertArr(int[] arr) {
+        for(int i = 0; i < arr.length; i++) {
+            arr[i] *= -1;
         }
     }
 
-    // Class for the doubly linked FIFO queue which has references to head, tail
-    // and for the number of elements in the list
-    static class DoubleLinkedList {
-        Node head;
-        Node tail;
-        int size;
+    /**
+     * Method which sorts an array of integers using algorithm Insertion sort.
+     * @param arr - The array to be sorted.
+     */
+    public static void insertionSort(int[] arr) {
 
-        public DoubleLinkedList() {
-            head = null;
-            tail = null;
-            size = 0;
+        int var;
+        // iterates array through from second element of the array
+        for (int i = 1; i < arr.length; i++) {
+
+            // swap adjacent elements at position j and j-1 until element at position
+            // j is smaller than element at position j-1
+            for (int j = i; j > 0 && (arr[j-1] > arr[j]); j--) {
+                // swap adjacent elements
+                var = arr[j-1];
+                arr[j-1] = arr[j];
+                arr[j] = var;
+
+            }
+            printArray(arr);
         }
+    }
 
-        /**
-         * Method which finds and places a input node in its right position so
-         * that the list is in ascending order.
-         * @param node - node to be inserted
-         */
-        public void enqueueInOrder(Node node) {
+    /**
+     * Method which prints out the content of current array.
+     * @param arr - The array to be printed.
+     */
+    public static void printArray(int[] arr) {
 
-            if(isEmpty()) {
-                enqueue(node);
-                return;
-            }
-
-            Node iterator = head;
-            int i = 0;
-            while(iterator != null) {
-
-                if(iterator.data >= node.data) {
-                    break;
-                }
-
-                iterator = iterator.next;
-                i++;
-            }
-
-            if(i == 0) {
-              enqueue(node);
-            }
-            else if(i == size) {
-              enqueueLast(node);
+        System.out.println();
+        for(int i = 0; i < arr.length; i++) {
+            if(i == arr.length - 1) {
+                System.out.printf("[%d]", arr[i]);
             }
             else {
-              Node temp = iterator.prev;
-              node.prev = temp;
-              node.next = iterator;
-              temp.next = node;
-              iterator.prev = node;
-              size++;
+                System.out.printf("[%d], ", arr[i]);
             }
-
         }
-
-        // Function for adding a node to the front of the queue
-        public void enqueue(Node input) {
-            input.next = head;
-            if(!isEmpty()) head.prev = input;
-            head = input;
-            if(tail == null) tail = input;
-            size++;
-
-        }
-
-        public void enqueueLast(Node input) {
-            Node oldTail = tail;
-            input.prev = oldTail;
-            if(tail != null) oldTail.next = input;
-            tail = input;
-            size++;
-        }
-
-        // Function for removing a node at the tail of the queue
-        public void dequeue() {
-          if(isEmpty()) System.exit(0);
-          Node oldTail = tail;
-          tail = oldTail.prev;
-          tail.next = null;
-          size--;
-        }
-
-        public boolean isEmpty() {
-          return head == null;
-        }
-
-        public String printList() {
-            StringBuilder sb = new StringBuilder();
-            Node node = head;
-
-            int i = 0;
-            while(node != null) {
-                if(node.next == null){
-                    sb.append("[" + node.data + "]");
-                }
-                else {
-                    sb.append("[" + node.data + "], ");
-                }
-                node = node.next;
-                i++;
-            }
-            return sb.toString();
-        }
-
-
-
     }
 
-
-    public static void main(String[] args) {
-        DoubleLinkedList list = new DoubleLinkedList();
-
-        System.out.println("*******Assignment7*******\n"
-                + "Inserting elements elements in following order 2, 7, 5, 6, 1, 0\n" +
-                "\nNow these values will be inserted in order: ");
-
-        list.enqueueInOrder(new Node(2));
-        System.out.println(list.printList());
-        list.enqueueInOrder(new Node(7));
-        System.out.println(list.printList());
-        list.enqueueInOrder(new Node(5));
-        System.out.println(list.printList());
-
-        list.enqueueInOrder(new Node(3));
-        System.out.println(list.printList());
-        list.enqueueInOrder(new Node(6));
-        System.out.println(list.printList());
-        list.enqueueInOrder(new Node(0));
-        System.out.println(list.printList());
-        list.enqueueInOrder(new Node(11));
-        System.out.println(list.printList());
-
-    }
 }

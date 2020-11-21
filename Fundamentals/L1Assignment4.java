@@ -1,62 +1,120 @@
 /**
- * Assignment 4
+ * Assignment 4 for lab 1
  *
- * Purpose of program: To represent a generic iterable circular linked list,
- * where the back's next always is the front. The program is able to add nodes
- * to both front and back, likewise, delete an element from front and back.
+ * Purpose of program: Implements a generic iterable circular linked list. The list contains
+ * methods to add nodes to both front and back, likewise, delete an element from front and back.
  */
 
-import java.util.Scanner;
+import java.util.EmptyStackException;
+import java.util.Iterator;
 
 public class L1Assignment4 {
 
     public static void main(String[] args) {
-        DoubleLinkedSentinelList<Integer> queue = new DoubleLinkedSentinelList<Integer>();
+        DoublyLinkedCircularList<Integer> list = new DoublyLinkedCircularList<Integer>();
 
-        System.out.println("********Assignment 4********\n" +
-                "Lets add some elements at the front!\n");
+        System.out.println("********Assignment 4********");
 
-        Scanner sc = new Scanner(System.in);
+        // testing add-to-front function
+        System.out.println("\nTest: adding nodes to front of list, containing values given in the order: ");
+        System.out.println("7  11  20");
 
-        while (sc.hasNextInt()) {
-            queue.addFirst(sc.nextInt());
-            System.out.println("printing content in queue: " + queue.toString() +
-                    "\nTo continue, enter more integers. To interrupt, enter a char");
+        list.addFirst(7);
+        list.printList();
+        list.addFirst(11);
+        list.printList();
+        list.addFirst(20);
+        list.printList();
 
+
+        String expectedRes = "[20], [11], [7]";
+        System.out.printf("\n\nExpected string representation of queue: %s\n", expectedRes);
+
+        System.out.println("Comparing expected string with string representation...");
+        if(list.toString().equals(expectedRes)) {
+            System.out.println("\nTrue! The string result is equal to the expected result");
+            System.out.printf("%s --is equal to-- %s\n", expectedRes, list.toString());
+        }
+        else {
+            System.out.println("\nFalse! The string result is not equal to the expected result");
+            System.out.printf("%s --is not equal to-- %s\n", expectedRes, list.toString());
         }
 
-        System.out.println("Lets delete an element from the back!");
-        queue.removeLast();
-        System.out.println("This is now the list: ");
-        System.out.println(queue.toString());
+        // testing add-to-back function
+        System.out.println("\nTest: adding nodes to back of list, containing values given in the order: ");
+        System.out.println("100 4");
 
-        System.out.println("Lets add an element to the back!");
+        list.addLast(100);
+        list.printList();
+        list.addLast(4);
+        list.printList();
 
-        Scanner sc2 = new Scanner(System.in);
-        while (sc2.hasNextInt()) {
-            queue.addLast(sc2.nextInt());
-            System.out.println("printing content in queue: " + queue.toString() +
-                    "\nTo continue, enter more integers. To interrupt, enter a char");
+        expectedRes = "[20], [11], [7], [100], [4]";
+        System.out.printf("\n\nExpected string representation of queue: %s\n", expectedRes);
 
+        System.out.println("Comparing expected string with string representation...");
+        if(list.toString().equals(expectedRes)) {
+            System.out.println("\nTrue! The string result is equal to the expected result");
+            System.out.printf("%s --is equal to-- %s\n", expectedRes, list.toString());
+        }
+        else {
+            System.out.println("\nFalse! The string result is not equal to the expected result");
+            System.out.printf("%s --is not equal to-- %s\n", expectedRes, list.toString());
         }
 
-        System.out.println("Lets delete an element at the front");
-        queue.removeFirst();
-        System.out.println("This is now the list: ");
-        System.out.println(queue.toString());
+        // testing remove-from-back and remove-from-front functions
+        System.out.println("\nTest: removing one element from back and one element from front of list in given order");
+
+        list.removeLast();
+        list.printList();
+        list.removeFirst();
+        list.printList();
+
+        expectedRes = "[11], [7], [100]";
+        System.out.printf("\n\nExpected string representation of queue: %s\n", expectedRes);
+
+        System.out.println("Comparing expected string with string representation...");
+        if(list.toString().equals(expectedRes)) {
+            System.out.println("\nTrue! The string result is equal to the expected result");
+            System.out.printf("%s --is equal to-- %s", expectedRes, list.toString());
+        }
+        else {
+            System.out.println("\nFalse! The string result is not equal to the expected result");
+            System.out.printf("%s --is not equal to-- %s", expectedRes, list.toString());
+        }
+
+        // testing the iterator functionality of the list
+        System.out.println("\n\nTest: creating Iterator object of list and iterating through it: ");
+        Iterator it = list.iterator();
+
+        while (it.hasNext()) {
+            System.out.printf("[%s], ", it.next());
+        }
+
+        // testing remove-from-back function from an empty list
+        System.out.println("\n\nTest: removing one element from the back on an empty list:");
+
+        list = new DoublyLinkedCircularList<>();
+
+        try {
+            list.removeLast();
+        }
+        catch (EmptyStackException ex) {
+            System.out.println("You tried to dequeue an element off an empty list.");
+        }
 
     }
 
     // class representing each node in the list
     private static class Node<Item> {
         private Item data;                  //data stored in node
-        private Node<Item> next;            //node positioned in front of current node
-        private Node<Item> prev;                //node positioned previous to current node
+        private Node next;
+        private Node prev;
 
         // constructor for a node in the list, taking data as argument and asserts to Node.
-        // Makes sure theres no node attached in front of after it.
         public Node(Item item) {
-            this.next = this.prev = this.prev;
+            this.next = null;
+            this.prev = null;
             data = item;
         }
 
@@ -66,94 +124,143 @@ public class L1Assignment4 {
         }
     }
 
-    //class representing the double linked sentinal list
-    private static class DoubleLinkedSentinelList<Item> {
-        private Node<Item> sentinel; // sentinel node, basically acts as a dummy node
+    //class representing the double linked sentinel list
+    private static class DoublyLinkedCircularList<Item> implements Iterable<Item>{
+        private Node sentinel; // sentinel node, basically acts as a dummy node
+        private int size;
 
-        //contructor for the double linked sentinal list, instantiates
-        //a list which is Empty
-        public DoubleLinkedSentinelList() {
-            sentinel = new Node<Item>(null);
+        //contructor list, instantiates a list which is Empty
+        public DoublyLinkedCircularList() {
+            sentinel = new Node(null);
             sentinel.next = sentinel;
             sentinel.prev = sentinel;
+
+            size = 0;
         }
 
-        // method reurning string representation of current list
-        public String toString() {
-            StringBuilder output = new StringBuilder();
-            Node<Item> current = sentinel.next;
+        // method printing representation of current list
+        public void printList() {
+            Node current = sentinel.next;
 
+            System.out.println();
             while (current != sentinel) {
                 if (current.next == sentinel)
-                    output.append("[" + current.toString() + "]");
+                    System.out.printf("[" + current.toString() + "]");
                 else
-                    output.append("[" + current.toString() + "], ");
+                    System.out.printf("[" + current.toString() + "], ");
                 current = current.next;
             }
 
-            return output.toString();
+        }
+
+        public String toString() {
+            String res = "";
+
+            Node current = sentinel.next;
+
+            while (current != sentinel) {
+                if (current.next == sentinel)
+                    res += "[" + current.toString() + "]";
+                else
+                    res += "[" + current.toString() + "], ";
+
+                current = current.next;
+            }
+
+            return res;
         }
 
         // method returns boolean if current list is empty or not
         public boolean isEmpty() {
-            return sentinel.next == sentinel;
+            return sentinel.prev == sentinel;
         }
 
         // method which removes the first node  in the list and returns it
         public Node removeFirst() {
             if (isEmpty()) {
-                return null;
+                throw new EmptyStackException();
             }
 
-            Node<Item> p = sentinel.next;
-            Node<Item> oldFirst = sentinel.next;
+            Node currentHead = sentinel.next;
+            Node oldHead = sentinel.next;
 
-            p.prev.next = p.next;
-            p.next.prev = p.prev;
+            currentHead.prev.next = currentHead.next;
+            currentHead.next.prev = currentHead.prev;
 
-            return oldFirst;
-
+            size--;
+            return oldHead;
         }
 
         // method which removes the last node in the list and returns it
         public Node removeLast() {
             if (isEmpty()) {
-                return null;
+                throw new EmptyStackException();
             }
 
-            Node<Item> p = sentinel.prev;
-            Node<Item> oldLast = sentinel.prev;
+            Node currentTail = sentinel.prev;
+            Node oldTail = sentinel.prev;
 
-            p.prev.next = p.next;
-            p.next.prev = p.prev;
+            currentTail.prev.next = currentTail.next;
+            currentTail.next.prev = currentTail.prev;
 
-            return oldLast;
+            size--;
+            return oldTail;
         }
 
         // method which adds a node at the front of the list
         public void addFirst(Item item) {
-            Node<Item> p = sentinel;
-            Node<Item> x = new Node<Item>(item);
+            Node temp = sentinel;
+            Node newHead = new Node(item);
 
-            x.next = p.next;
-            x.prev = p;
-            p.next.prev = x;
-            p.next = x;
+            newHead.next = temp.next;
+            newHead.prev = temp;
+            temp.next.prev = newHead;
+            temp.next = newHead;
+
+            size++;
         }
 
         // method which adds a node to the back of the list
         public void addLast(Item item) {
-            Node<Item> p = sentinel.prev;
-            Node<Item> x = new Node<Item>(item);
+            Node temp = sentinel.prev;
+            Node newTail = new Node(item);
 
 
-            x.next = p.next;
-            x.prev = p;
-            p.next.prev = x;
-            p.next = x;
+            newTail.next = temp.next;
+            newTail.prev = temp;
+            temp.next.prev = newTail;
+            temp.next = newTail;
 
+            size++;
         }
 
+
+        @Override
+        public Iterator<Item> iterator() {
+            return new DLLCircularIterator();
+        }
+
+        private class DLLCircularIterator implements Iterator<Item> {
+            private boolean isLooped = false;
+            private Node current = sentinel.next;
+
+            // checks if there's an element next in line
+            public boolean hasNext() {
+                return current != sentinel && !isLooped;
+            }
+
+            // iterates one position to next element
+            public Item next() {
+                if (current == sentinel) {
+                    isLooped = true;
+                    return null;
+                }
+
+                Item item = (Item) current.data;
+                current = current.next;
+                return item;
+            }
+        }
 
     }
 

@@ -1,381 +1,208 @@
-/************************
- * Assignment 3 for lab 3
+import edu.princeton.cs.algs4.SequentialSearchST;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
+/**
+ * Assignment 3 in Lab 3
  *
- * Program reads a limited number of words from StdIn and measures the frequency of these and
- * places them into an ST, where the user then can set two arguments "front" and "back".
- * Front is the word with N'th most frequencies and end is the word with N + x'th most frequencies.
- * The program then prints the words from N to (N + x) according to order of frequencies in the ST.
-
- 	 Example run:
-	 java -cp algs4.jar: L3Assignment3 0 100 1 10 < tale.txt
-	 BST initialized!
-	 1. the
-	 2. and
-	 3. of
-	 4. a
-	 5. to
-	 6. in
-	 7. it
-	 8. with
-	 9. i
-	 10. you
-
- ***********************/
-
-import edu.princeton.cs.algs4.*;
+ * Purpose of program: To showcase how evenly the built-in hashcode() function is for strings. This is shown by creating
+ * a large hash table that uses separate chaining for collision handling, where keys are strings (words) read from a text
+ * file that is hashed to positions of the table.
+ */
 public class L3Assignment3 {
 
-	// switch between the data structures
-	private static BST<String, Integer> st = new BST<String, Integer>();
-	//private BinarySearchST<String, Integer> st = new BinarySearchST<String, Integer>();
+    public static void main(String[] args) throws FileNotFoundException {
 
-	public static void main(String[] args) {
+        System.out.println("********Assignment 3********");
+        SeparateChainingHashST<String, Integer> ht = new SeparateChainingHashST<String, Integer>(10000);
 
-		// key-length cutoff and limit for amount of words to read in
-		int minlen = Integer.parseInt(args[0]);
-		int limit = Integer.parseInt(args[1]);
-		int front = Integer.parseInt(args[2]) ;
-		int back = Integer.parseInt(args[3]);
+        File file = new File("C:\\Users\\gurra\\Documents\\ID1020Labs\\searchLabb\\tale.txt");
 
-		int wordCount = 0;
 
-		if(args.length < 4) {
-			System.out.println("Four arguments should be entered");
-			System.exit(0);
-		}
+        Scanner textScanner = new Scanner(file);
+        Scanner stdIn = new Scanner(System.in);
 
-		// using FreuencyCounter from the book, which builds st and counts frequencies
-		while (!StdIn.isEmpty()) {
+        System.out.println("Enter number of words to be read: ");
+        int quantity = stdIn.nextInt();
+        if (quantity < 0) {
+            System.out.println("ERROR: Number of words should at least be 0.");
+            System.exit(0);
+        }
 
-			String word = StdIn.readString().toLowerCase();
+        int words = 0, distinct = 0, collisions = 0, minLen = 3;
+        String key;
 
-			if (word.length() < minlen) {
-				continue; // Ignore short keys.
-			}
-			else if (st.contains(word)){
-				st.put(word, st.get(word) + 1);
-			}
-			else if (!st.contains(word) && wordCount < limit) {
-				st.put(word, 1);
-				wordCount++;
-			}
-		}
+        while (textScanner.hasNext() && words < quantity) {
+            // read next word from stdIn, make it lower case and then remove all characters in that word
+            // that is non-alphabetic
+            key = textScanner.next().toLowerCase().replaceAll("[^a-z]", "");
 
-		printQueriedWords(front, back);
+            if (key.length() < minLen)
+                continue;
 
-	}
 
-	private static void printQueriedWords(int front, int back) {
-
-		// arguments front and back marks the collection of words to be printed in order according to
-		// the frequency.
-		String [] freqList = new String[back];
-
-		String maxRef = "";
-		st.put(maxRef, 0);
-
-		// finding the word with most frequency
-		for (String word : st.keys()) {
-			if (st.get(word) > st.get(maxRef)) {
-				maxRef = word;
-			}
-		}
-
-		// placing the word with highest frequency at the front of array and resets maxRef
-		freqList[0] = maxRef;
-		maxRef = "";
-		st.put(maxRef, 0);
-
-		// iterates through the ST and finds word with highest frequency that has less frequency than
-		// current element i in our array.
-		for (int i = 1; i < back; i++) {
-
-        for (String word : st.keys()) {
-            if (st.get(word) > st.get(maxRef) && st.get(word) < st.get(freqList[i - 1]))
-                maxRef = word;
+            if (!ht.contains(key)) {
+                ht.put(key, 1);
+                distinct++;
+            }
+            else {
+                ht.put(key, ht.get(key) + 1);
             }
 
-            freqList[i] = maxRef;
-            maxRef = "";
+            words++;
+
         }
 
-				// prints from front to back of the elements in our array.
-        for (int i = front - 1; i < back; i++) {
-            System.out.println((i + 1) + ". " + freqList[i]);
+        int meanValCollisions = 0, maxValCollisions = 0, minValCollisions = Integer.MAX_VALUE;
+        int current;
+        // derive the maximum collisions in a cell, and the minimum
+        for(int i = 0; i < ht.st.length; i++) {
+            if(ht.st[i].isEmpty()) continue;
+            current = ht.st[i].size();
+
+            if(maxValCollisions < current) maxValCollisions = current;
+            if(minValCollisions > current) minValCollisions = current;
+            meanValCollisions += ht.st[i].size();
         }
+        int nonEmptyCells = ht.getNonEmptyCells();
+        meanValCollisions /= nonEmptyCells;
 
-	}
-
-	// binary search symbol table
-	private static class BinarySearchST<Key extends Comparable<Key>, Value> {
-	    private static final int INIT_CAPACITY = 2;
-	    private Key[] keys;
-	    private Value[] vals;
-	    private int n = 0;
-
-
-
-	    // Creates an empty Symbol Table
-	    public BinarySearchST() {
-	    	this(INIT_CAPACITY);
-	    	System.out.println("BinarySearchST initialized!");
-	    }
-
-
-	    // Creates an empty symbol table with the initial capacity.
-	    public BinarySearchST(int capacity) {
-	        keys = (Key[]) new Comparable[capacity];
-	        vals = (Value[]) new Object[capacity];
-	    }
-
-	    // Method creating temporary arrays with a larger capacity and copies over elements from
-	    private void resize(int capacity) {
-	        Key[]   tempk = (Key[])   new Comparable[capacity];
-	        Value[] tempv = (Value[]) new Object[capacity];
-	        for (int i = 0; i < n; i++) {
-	            tempk[i] = keys[i];
-	            tempv[i] = vals[i];
-	        }
-	        vals = tempv;
-	        keys = tempk;
-	    }
-
-
-	    // Returns the number of key-value pairs in this symbol table.
- 		int size() {
-	        return n;
-	    }
-
- 		// Checks if the amount of key-value pairs is zero
-	    public boolean isEmpty() {
-	        return size() == 0;
-	    }
-
-
-	    // Method returning true/false if a key-value pair exists
-	    public boolean contains(Key key) {
-	    	return get(key) != null;
-	    }
-
-
-	    // Method returning associated value of a specified key
-	    public Value get(Key key) {
-	        if (isEmpty()) return null;
-	        int i = rank(key);
-	        if (i < n && keys[i].compareTo(key) == 0) return vals[i];
-	        return null;
-	    }
-
-
-	    // Returns the number of keys in this symbol table strictly less than key.
-	    public int rank(Key key) {
-	        if (key == null) throw new IllegalArgumentException("argument to rank() is null");
-
-	        int lo = 0, hi = n-1;
-	        while (lo <= hi) {
-	            int mid = lo + (hi - lo) / 2;
-	            int cmp = key.compareTo(keys[mid]);
-	            if      (cmp < 0) hi = mid - 1;
-	            else if (cmp > 0) lo = mid + 1;
-	            else return mid;
-	        }
-	        return lo;
-	    }
-
-
-
-	    /**
-	     * Method which adds a key-value pair into symbol table, and if corresponding key already exists,
-	     * we overwriting the previous value with the new one.
-	     * Deletes the specified key (and its associated value) from this symbol table
-	     * if the specified value is {@code null}.
-	     */
-	    public void put(Key key, Value val)  {
-	        if (key == null) throw new IllegalArgumentException("first argument to put() is null");
-
-	        if (val == null) {
-	            return;
-	        }
-
-	        int i = rank(key);
-
-	        // Input key is already existing in Symbol Table
-	        if (i < n && keys[i].compareTo(key) == 0) {
-	            vals[i] = val;
-	            return;
-	        }
-
-	        // Inserting new key-value pair
-	        if (n == keys.length) resize(2*keys.length);
-
-	        for (int j = n; j > i; j--)  {
-	            keys[j] = keys[j-1];
-	            vals[j] = vals[j-1];
-	        }
-	        keys[i] = key;
-	        vals[i] = val;
-	        n++;
-	    }
-
-
-	    // Method returning the mininum key
-	    public Key min() {
-	        if (isEmpty()) System.out.println("Symbol table empty");
-	        return keys[0];
-	    }
-
-	    // Method returning max key
-	    public Key max() {
-	        if (isEmpty()) System.out.println("Symbol table empty");
-	        return keys[n-1];
-	    }
-
-
-	    // Returning keys of the Symbol table
-        public Iterable<Key> keys() {
-            return keys(min(), max()); //in the range of min and manx
-        }
-
-	    //Returns all keys in this symbol table in the given range
-	    public Iterable<Key> keys(Key lo, Key hi) {
-	        if (lo == null) throw new IllegalArgumentException("first argument to keys() is null");
-	        if (hi == null) throw new IllegalArgumentException("second argument to keys() is null");
-
-	        Queue<Key> queue = new Queue<Key>();
-	        if (lo.compareTo(hi) > 0) return queue;
-	        for (int i = rank(lo); i < rank(hi); i++)
-	            queue.enqueue(keys[i]);
-	        if (contains(hi)) queue.enqueue(keys[rank(hi)]);
-	        return queue;
-	    }
-
-
+        System.out.println("Stats:");
+        System.out.printf("Total number of words read from file: %d\n", words);
+        System.out.printf("Total number of distinct words read from file: %d\n", distinct);
+        System.out.printf("Minimum collisions in a cell is %d, Maximum is %d and the mean value for collisions in each cell is %d\n",
+                minValCollisions, maxValCollisions, meanValCollisions);
 
     }
 
-		// binary symbol table
-    private static class BST<Key extends Comparable<Key>, Value> {
-        private Node root;
+    // class representing a hash table which uses separate chaining to handle collisions
+    public static class SeparateChainingHashST<Key, Value> {
+        private static final int INIT_CAPACITY = 4;
 
-        public BST() {
-        	System.out.println("BST initialized!");
+        private int n;                                // number of key-value pairs
+        private int m;                                // hash table size
+        private SequentialSearchST<Key, Value>[] st;  // array of linked-list symbol tables
+
+
+        /**
+         * Creates empty symbol table with number of cells given as argument
+         */
+        public SeparateChainingHashST(int m) {
+            this.m = m;
+            st = (SequentialSearchST<Key, Value>[]) new SequentialSearchST[m];
+            for (int i = 0; i < m; i++)
+                st[i] = new SequentialSearchST<Key, Value>();
         }
 
-        // Class for node where each node has a left and right node and a value
-        private class Node {
-            private Key key;
-            private Value val;
-            private Node left, right;
-            private int N;
+        // resize the hash table to have the given number of chains,
+        // rehashing all of the keys
+        private void resize(int chains) {
+            SeparateChainingHashST<Key, Value> temp = new SeparateChainingHashST<Key, Value>(chains);
+            for (int i = 0; i < m; i++) {
+                for (Key key : st[i].keys()) {
+                    temp.put(key, st[i].get(key));
+                }
+            }
+            this.m = temp.m;
+            this.n = temp.n;
+            this.st = temp.st;
+        }
 
-            public Node(Key key, Value val, int N) {  //constructor
-                this.key = key;
-                this.val = val;
-                this.N = N;
+        // hash value between 0 and m-1
+        private int hash(Key key) {
+            return (key.hashCode() & 0x7fffffff) % m;
+        }
+
+        private void printCells() {
+            SequentialSearchST<Key, Value> current;
+            for(int i = 0; i < m; i++) {
+
+                current = st[i];
+                if(current.isEmpty()) continue;
+                System.out.printf("\nCell: %d contains collisions: ", i);
+                for(Key key : current.keys()) {
+                    System.out.printf("%s, ", key);
+                }
             }
         }
 
-        // Returns amount of key-value pairs
+        private int getNonEmptyCells() {
+            int count = 0;
+            for(int i = 0; i < m; i++) {
+
+                if(st[i].isEmpty()) continue;
+                count++;
+            }
+
+            return count;
+        }
+
+        /**
+         * method returns number of key-pairs in hash table
+        */
         public int size() {
-            return size(root);
+            return n;
         }
 
-
-        // Returns number of key-value pairs in BST rooted at x
-        private int size(Node x) {
-            if (x == null)
-                return 0;
-            else
-                return x.N;
+        /**
+         * method checks if hash table is empty
+         */
+        public boolean isEmpty() {
+            return size() == 0;
         }
 
-        // Methods returning value associated with a specified key, beginning at root
-        public Value get(Key key) {
-            return get(root, key);
-        }
-
-        private Value get(Node x, Key key) {
-
-        	if (x == null)                    //base case if node is null
-                return null;
-            int cmp = key.compareTo(x.key);   //Comparing each key with current node
-            if (cmp < 0)                      //if key is smaller than current node, we go down left sub-tree
-                return get(x.left, key);
-            else if (cmp > 0)                 //if key is larger than current node, we go down right sub-tree
-                return get(x.right, key);
-            else
-                return x.val;                 //return the associated value of input key meaning, we found correct value
-        }
-
-
-        // Insertion of a new key-pair value
-        public void put(Key key, Value val) {
-            root = put(root, key, val);
-        }
-
-        private Node put(Node x, Key key, Value val) {
-            if (x == null) return new Node(key, val, 1); //if it is the first node in the tree or found the right place for the new node
-            int cmp = key.compareTo(x.key);              //otherwise compare the key and the key at current node
-            if (cmp < 0)                                 //if key is smaller than the key at the current node go left (i.e lexicographically samller)
-                x.left = put(x.left, key, val);          //recrusive call, to go down i the tree to find the right place
-            else if (cmp > 0)                            //if key is bigger than the key at the root go right (i.e lexicographically greater)
-                x.right = put(x.right, key, val);        //recrusive call, to go down i the tree to find the right place
-            else
-                x.val = val;                             //else if key is equal to the current node update the value
-
-            x.N = size(x.left) + size(x.right) + 1;      //update the number of nodes in subtree
-            return x;                                    //return root
-        }
-
-        // We check if current Symbol table contains specified key
+        /**
+         * method looks if a key, given as argument, exists in current hash table
+         */
         public boolean contains(Key key) {
+            if (key == null) return false;
             return get(key) != null;
         }
 
-        // Returning the minimum value
-        public Key min() {
-            return min(root).key;
+        /**
+         * Returns the value associated with the specified key in this symbol table.
+         */
+        public Value get(Key key) {
+            if (key == null) throw new IllegalArgumentException("argument to get() is null");
+            int i = hash(key);
+            return st[i].get(key);
         }
 
-        // Returns the minimum key by going down the left sub-tree
-        private Node min(Node x) {
-            if (x.left == null) return x;
-            return min(x.left);
+        /**
+         * Inserts the specified key-value pair into the symbol table, overwriting the old
+         * value with the new value if the symbol table already contains the specified key.
+         * Deletes the specified key (and its associated value) from this symbol table
+         */
+        public void put(Key key, Value val) {
+            if (key == null) return;
+            if (val == null) {
+                delete(key);
+                return;
+            }
+
+            // double table size if average length of list >= 10
+            if (n >= 10 * m) resize(2 * m);
+
+            int i = hash(key);
+            if (!st[i].contains(key)) n++;
+            st[i].put(key, val);
         }
 
-        // Returns the max key of current tree
-        public Key max() {
-            return max(root).key;
-        }
+        /**
+         * Removes the specified key and its associated value from this symbol table
+         * (if the key is in this symbol table).
+         */
+        public void delete(Key key) {
+            if (key == null) throw new IllegalArgumentException("argument to delete() is null");
 
-        // Returns the max key of current tree by going down the right sub-tree
-        private Node max(Node x) {
-            if (x.right == null) return x;
-            else return max(x.right);
-        }
+            int i = hash(key);
+            if (st[i].contains(key)) n--;
+            st[i].delete(key);
 
-        // Returns current keys
-        public Iterable<Key> keys() {
-            return keys(min(), max());
-        }
-
-        // Returns keys in a queue
-        public Iterable<Key> keys(Key lo, Key hi) {
-            Queue<Key> queue = new Queue<Key>();
-            keys(root, queue, lo, hi);
-            return queue;
-        }
-
-        private void keys(Node x, Queue<Key> queue, Key lo, Key hi) {
-            if (x == null) return;                                    //base case if node is null
-            int cmplo = lo.compareTo(x.key);                          //comparison of current key with minimum key
-            int cmphi = hi.compareTo(x.key);                          //comparison of current key with maximum key
-            if (cmplo < 0)                                            //if smaller go down left sub tree
-                keys(x.left, queue, lo, hi);
-            if (cmplo <= 0 && cmphi >= 0)                             //meaning key found and we add to queue
-                queue.enqueue(x.key);
-            if (cmphi > 0)                                            //if greater, then go down right subtree
-                keys(x.right, queue, lo, hi);
+            // halve table size if average length of list <= 2
+            if (m > INIT_CAPACITY && n <= 2 * m) resize(m / 2);
         }
     }
 }

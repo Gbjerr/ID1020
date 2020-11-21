@@ -1,111 +1,152 @@
 /**
  * Assignment 3 in Lab 2
  *
- * Purpose of program: To sort an array of integers using algorithm Selection sort
- * in ascending order and count the number of swaps made during the sorting process.
+ * Purpose of program: To sort an array of integers using algorithm insertion sort
+ * in ascending order via input from user, and printing the number of inversions
+ * before sorting.
  *
  * Execution of program:
  *
- * ******* Assignment 3 *******
- * Enter the size of your array:
- * 5
+ *    ******* Assignment 3 *******
+ *    Enter the size of your array:
+ *    5
  *
- * Now enter the elements to be inserted to the array:
- * 5
- * 8
- * 16
- * -1
- * 3
+ *    Now enter the elements to be inserted to the array:
+ *    7
+ *    11
+ *    9
+ *    -4
+ *    6
  *
- * This is your array unsorted: [5], [8], [16], [-1], [3]
+ *    This is your array unsorted:
  *
- * Sorting array.....
- * [-1], [8], [16], [5], [3]
- * [-1], [3], [16], [5], [8]
- * [-1], [3], [5], [16], [8]
- * [-1], [3], [5], [8], [16]
- * This is the number of swaps operated: 4
+ *    [7], [11], [9], [-4], [6]
+ *    The following are your inversions before sorting:
+ *    [0, 7], [3, -4]
+ *    [0, 7], [4, 6]
+ *    [1, 11], [2, 9]
+ *    [1, 11], [3, -4]
+ *    [1, 11], [4, 6]
+ *    [2, 9], [3, -4]
+ *    [2, 9], [4, 6]
+
+ *    Number of inversions: 7
+ *
+ *    Sorting array.....
+ *
+ *    [7], [11], [9], [-4], [6]
+ *    [7], [9], [11], [-4], [6]
+ *    [-4], [7], [9], [11], [6]
+ *    [-4], [6], [7], [9], [11]
+ *    Number of swaps performed during sort process: 7
+ *
  */
 
-import java.util.Scanner;
+import edu.princeton.cs.algs4.StdIn;
+
 public class L2Assignment3 {
 
     public static void main(String[] args) {
 
+        System.out.println("******* Assignment 3 *******\n"
+                + "Enter the size of your array: ");
 
-       System.out.println("******* Assignment 3 *******\n"
-            + "Enter the size of your array: ");
-       Scanner sc = new Scanner(System.in);
-       int[] array = new int[sc.nextInt()];
+        int n = StdIn.readInt();
 
-       System.out.println("\nNow enter the elements to be inserted to the array: ");
+        // interrupt if input size is lesser than 1
+        if(n < 1) {
+            System.out.println("ERROR: Size of array must be greater than 0");
+            System.exit(0);
+        }
 
-       for(int i = 0; i < array.length; i++) {
-           array[i] = sc.nextInt();
-       }
+        int[] array = new int[n];
 
-       System.out.println("\nThis is your array unsorted: ");
-       printArray(array);
+        System.out.println("\nNow enter the elements to be inserted to the array: ");
 
-       System.out.println("\nSorting array.....");
-       int swaps = sort(array, array.length);
-       System.out.println("This is the number of swaps operated: " + swaps);
+        for(int i = 0; i < array.length; i++) {
+            array[i] = StdIn.readInt();
+        }
+
+        System.out.println("\nThis is your array unsorted: ");
+        printArray(array);
+
+        System.out.println("\nThe following are your inversions before sorting: ");
+
+        countInv(array, array.length);
+
+        System.out.println("\nSorting array.....");
+        insertionSort(array);
 
     }
-
 
     /**
-     * Method which sorts an array of integers using algorithm Selection sort.
-     * Selection sort uses a "min" reference to the minimum value which will be
-     * compared continously with other elements in the array. When we find a value
-     * less than the minimum, we point the min reference to index of the found one.
-     * Thereafter we replace the old minimum with the new newly found one.
-     * We count all swaps that operates during the algorithm, and returns the count.
+     * Method which sorts an array of integers using algorithm Insertion sort.
      * @param arr - The array to be sorted.
-     * @param n - Length of arr.
-     * @return - amount of swaps operated.
      */
-    private static int sort(int[] arr, int n){
-        if(n <= 1) {
-            System.out.println("Nothing to sort..");
-            return -1;
-        }
+    public static void insertionSort(int[] arr) {
+
         int swaps = 0;
+        int var;
+        // loop from the start of array
+        for (int i = 1; i < arr.length; i++) {
+
+            // swap adjacent elements at position j and j-1 until element at position
+            // j is greater than element at position j-1
+            for (int j = i; j > 0 && (arr[j-1] > arr[j]); j--) {
+                // swap adjacent elements
+                var = arr[j-1];
+                arr[j-1] = arr[j];
+                arr[j] = var;
+                swaps++;
+
+            }
+            printArray(arr);
+        }
+
+        System.out.printf("\nNumber of swaps during sort process: %d\n", swaps);
+    }
+
+    /**
+     * Method that goes through an array and prints the inversions.
+     * @param arr - The array to go through
+     * @param n - Length of the array
+     */
+    public static void countInv(int[] arr, int n) {
+        if(n <= 1) {
+            return;
+        }
+        int count = 0;
 
         for(int i = 0; i < n; i++) {
-            int min = i;
+
             for(int j = i+1; j < n; j++) {
 
-                if(arr[min] > arr[j]) {
-                    min = j;
+                if(arr[i] > arr[j]) {
+                    System.out.printf("[%d, %d], [%d, %d]\n", i, arr[i], j, arr[j]);
+                    count++;
                 }
             }
-                if(i != min) {
-                    int temp = arr[min];
-                    arr[min] = arr[i];
-                    arr[i] = temp;
-                    swaps++;
-                    printArray(arr);
-                }
         }
-        return swaps;
+
+        System.out.printf("\nNumber of inversions: %d\n", count);
     }
+
 
     /**
      * Method which prints out the content of current array.
      * @param arr - The array to be printed.
      */
     public static void printArray(int[] arr) {
-        StringBuilder sb = new StringBuilder();
 
+        System.out.println();
         for(int i = 0; i < arr.length; i++) {
             if(i == arr.length - 1) {
-                sb.append("[" + arr[i]+ "]");
+                System.out.printf("[%d]", arr[i]);
             }
             else {
-                sb.append("[" + arr[i]+ "]" +", ");
+                System.out.printf("[%d], ", arr[i]);
             }
         }
-        System.out.println(sb.toString());
     }
+
 }

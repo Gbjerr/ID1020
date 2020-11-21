@@ -1,134 +1,200 @@
-/************************
+/**
  * Assignment 2 in course ID1020 for lab 4 at KTH
- *
+ * <p>
  * Program creates an undirected graph, which uses adjacency-lists for implementation.
- * Furthermore the graph uses Breadth path search for finding and traversing paths
- * from vertex X to vertex Y if there is one.
+ * Furthermore the program uses Breadth first search for finding and traversing paths
+ * from X to Y if there is such a path.
+ */
 
- 	 Example run:
-	 java -cp algs4.jar: L4Assignment2 IA ID < states.txt
-	 IA -> SD -> WY -> ID
+import edu.princeton.cs.algs4.Bag;
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.Queue;
 
- ***********************/
-import edu.princeton.cs.algs4.*;
+import java.util.Scanner;
+import java.util.Stack;
 
 public class L4Assignment2 {
 
-	// declaration of american states mapped to array
-	public static final String[] americanStates = new String[] {"AK", "AL", "AR", "AS", "AZ","CA", "CO", "CT", "DC", "DE", "FL", "GA","GU","HI",
-          	"IA", "ID","IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", "MI", "MN", "MO", "MS",
-          	"MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "PR",
-          	"RI", "SC", "SD", "TN", "TX", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY"};
+    // array containing all american states as abbreviations
+    public static final String[] americanStates = new String[]
+            {"AK", "AL", "AR", "AS", "AZ", "CA", "CO", "CT", "DC", "DE", "FL", "GA", "GU", "HI",
+                    "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", "MI", "MN", "MO", "MS",
+                    "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "PR",
+                    "RI", "SC", "SD", "TN", "TX", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY"};
 
-	public static void main(String[] args) {
+    public static void main(String[] args) {
 
-				// X point to initial start vertex and Y to end vertex
-        String X = args[0];
-        String Y = args[1];
-
+        In in = new In(args[0]);
         Graph graph = new Graph(americanStates.length);
 
-        // reads from StdIn, maps these to americanStatesm creates edges based on input states and adds these to graph.
-        while (!StdIn.isEmpty()) {
-						int spot1 = 0;
-						int spot2 = 0;
+        // reads connected vertices from text file, and maps these accordingly to
+        // array of american states to identify which numbers from the graph corresponds
+        // to which state
+        System.out.println("Reading from text file and creating graph...");
+        while (in.hasNextLine()) {
 
-						String state1 = StdIn.readString().toUpperCase();
-						String state2 = StdIn.readString().toUpperCase();
+            int spot1 = 0;
+            int spot2 = 0;
 
-						// iterating until proper element is found
-						for(int i = 0; i < americanStates.length; i++) {
-								if(state1.equals(americanStates[spot1])) {
-										break;
-								}
-								else spot1++;
-						}
+            String state1 = in.readString().trim().toUpperCase();
+            String state2 = in.readString().trim().toUpperCase();
 
-						// iterating until proper element is found
-						for(int j = 0; j < americanStates.length; j++) {
-								if(state2.equals(americanStates[spot2])) {
-										break;
-								}
-								else spot2++;
-						}
+            // iterating until proper element is found
+            for (int i = 0; i < americanStates.length; i++) {
+                if (state1.equals(americanStates[spot1])) {
+                    break;
+                } else spot1++;
+            }
 
-						graph.addEdge(spot1, spot2);
-				}
+            // iterates until proper element is found
+            for (int j = 0; j < americanStates.length; j++) {
+                if (state2.equals(americanStates[spot2])) {
+                    break;
+                } else spot2++;
+            }
 
-		        // create instance of depth first path search and print path if there is one.
-		    BreadthFirstPaths bfs = new BreadthFirstPaths(graph, selectState(X));
-		    StdOut.println(X + " -> " + bfs.pathTo(selectState(Y)));
+            graph.addEdge(spot1, spot2);
+        }
+        System.out.println("Done!");
 
-	}
+        Scanner stdIn = new Scanner(System.in);
+        String X = "", Y = "";
 
-	// method mapping name of a state to return a mapped value
-	public static int selectState(String s) {
+        // user input for deciding which vertices to find a path in between
+        boolean bool = true;
+        while (bool) {
 
-			int i = 0;
-			while(i < americanStates.length) {
-					if(s.equals(americanStates[i])) {
-							break;
-					}
-					i++;
-			}
-			return i;
-	}
+            System.out.println("\nEnter a number according to the menu:");
+            System.out.println("1: Find a path from node X to Y with BFS");
+            System.out.println("2: exit");
 
-	// implementation of breadth first search for finding all paths in the graph
-	public static class BreadthFirstPaths {
+            switch (stdIn.nextInt()) {
+                // by entering first case, user may choose to get path from X to Y
+                case 1:
+                    System.out.println("\nEnter an American state as starting vertex (as abbreviation ex. Kentucky as KY):");
+                    X = stdIn.next();
+
+                    // confirm that entered start vertex is entered as an abbreviated american state
+                    if (!isState(X)) {
+                        System.out.printf("ERROR: entered string \"%s\" is not an american state\n", X);
+                        System.exit(0);
+                    }
+
+                    System.out.println("\nEnter an American state as end vertex (as abbreviation ex. New York as NY):");
+                    Y = stdIn.next();
+
+                    // confirm that entered destination vertex is entered as an abbreviated american state
+                    if (!isState(Y)) {
+                        System.out.printf("ERROR: entered string \"%s\" is not an american state\n", Y);
+                        System.exit(0);
+                    }
+
+                    int start = selectState(X), destination = selectState(Y);
+                    BreadthFirstPaths bfs = new BreadthFirstPaths(graph, start);
+                    if (!bfs.hasPathTo(destination)) {
+                        System.out.printf("There exists no path from %s to %s\n", X, Y);
+                        break;
+                    }
+
+                    System.out.println(X + bfs.pathTo(destination));
+                    break;
+                // second case means we exit program
+                case 2:
+                    bool = false;
+                    break;
+                // default case means nothing happens
+                default:
+                    System.out.println("Entered number was not valid!");
+            }
+        }
+
+
+    }
+
+    // method mapping a name of a state by returning an index where that state is located
+    public static int selectState(String s) {
+
+        int i = 0;
+        while (i < americanStates.length) {
+            if (s.equals(americanStates[i])) {
+                break;
+            }
+            i++;
+        }
+
+        return i;
+    }
+
+    // return true if string value is contained in array
+    public static boolean isState(String s) {
+
+        for (int i = 0; i < americanStates.length; i++) {
+
+            if (s.equals(americanStates[i])) return true;
+        }
+
+        return false;
+    }
+
+    // implementation of breadth first search for finding all paths in the graph
+    public static class BreadthFirstPaths {
         private boolean[] marked;
         private int[] edgeTo;
         private final int s;
 
-        // argument s is the source of the path were looking for
+        // constructor, where s is the start vertex point
         public BreadthFirstPaths(Graph G, int s) {
-        	// create array with same size as amount of vertices
-        	marked = new boolean[G.V()];
+
+            marked = new boolean[G.V()];
             edgeTo = new int[G.V()];
             this.s = s;
             bfs(G, s);
         }
 
+        // method creates the path system from one node to all other nodes
         private void bfs(Graph G, int s) {
-            Queue<Integer> queue = new Queue<Integer>(); //create a queue to know which vertices to check, dequeue while checked
-            marked[s] = true;               //mark the vertex s to true
-            queue.enqueue(s);               //put it on the queue
-            while (!queue.isEmpty()) {      //while queue is not empty
-                int v = queue.dequeue();    //remove next vertex from the queue
-                for (int w : G.adj(v))      //iterate through the adj[v]
-                    if (!marked[w]) {       //for every unmarked adjacent vertex
-                        edgeTo[w] = v;      //save last edge on a shortest path
-                        marked[w] = true;   //mark it because path is known,
-                        queue.enqueue(w);   //and add it to the queue
+
+            // queue is created to know which upcoming vertices to check
+            Queue<Integer> queue = new Queue<Integer>();
+            marked[s] = true;
+            queue.enqueue(s);
+
+            // while queue is not out of vertices, keep going
+            while (!queue.isEmpty()) {
+
+                // dequeue while processing its neighbors
+                int v = queue.dequeue();
+
+                // check if connected vertices are visited or not, and if not visited
+                // mark as visited and add from w to v
+                for (int w : G.adj(v)) {
+
+                    if (!marked[w]) {
+                        edgeTo[w] = v;
+                        marked[w] = true;
+                        queue.enqueue(w);
                     }
+                }
             }
         }
 
+        // checks if there is a path to given vertex
         public boolean hasPathTo(int v) {
             return marked[v];
         }
 
-        // returns string representation of the path to chosen vertex
+        // method returns path from start vertice to the vertcie given as argument
         public String pathTo(int v) {
-        	if (!hasPathTo(v))
-                return null;
+            if (!hasPathTo(v)) return null;
 
-        	StringBuilder sb = new StringBuilder();
-        	int i = 0;
-
-        	for (int x = v; x != s; x = edgeTo[x]) {
-                i++;
-          }
-        	String [] collection = new String[i];
-        	i = 0;
+            Stack<Integer> temp = new Stack<Integer>();
+            StringBuilder sb = new StringBuilder();
             for (int x = v; x != s; x = edgeTo[x]) {
-                collection[i] = americanStates[x];
-                i++;
+                temp.push(x);
             }
 
-            for(i = collection.length - 1; i >= 0; i--) {
-            	if(i == 0) sb.append(collection[i]);
-            	else sb.append(collection[i] + " -> ");
+            while(!temp.isEmpty()) {
+                sb.append(" -> " + americanStates[temp.pop()]);
             }
             return sb.toString();
         }
@@ -136,11 +202,15 @@ public class L4Assignment2 {
     }
 
 
-	// graph implementation using adjacency lists for vertex connecting a vertex.
+    // graph implementation using adjacency lists for vertex connecting a vertex.
     public static class Graph {
-        private final int V;        //vertices
-        private int E;              //edges
-        private Bag<Integer>[] adj; //Lists that are adjacent
+
+        // vertices
+        private final int V;
+        // edges
+        private int E;
+        // array of adjacency lists
+        private Bag<Integer>[] adj;
 
         public Graph(int V) {
             this.V = V;
@@ -151,12 +221,12 @@ public class L4Assignment2 {
                 adj[v] = new Bag<Integer>();
         }
 
-        // return vertices
+        // return number of vertices
         public int V() {
             return V;
         }
 
-        // return amt of edges
+        // return number of edges
         public int E() {
             return E;
         }
@@ -172,4 +242,5 @@ public class L4Assignment2 {
             return adj[v];
         }
     }
+
 }
